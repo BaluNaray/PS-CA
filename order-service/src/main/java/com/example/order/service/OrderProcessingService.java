@@ -15,6 +15,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -25,7 +26,7 @@ public class OrderProcessingService {
     private final RestTemplate restTemplate;
     private final KafkaTemplate<String, ProcessedOrderEvent> kafkaTemplate;
 
-    private static final String PAYMENT_SERVICE_URL = "http://localhost:8081/api/v1/payment-status/";
+    private static final String PAYMENT_SERVICE_URL = "http://localhost:8081/payments/{orderId}/status";
     private static final String INVENTORY_SERVICE_URL = "http://localhost:8082/api/v1/orders/{orderId}/invoice-items";
     private static final String SHIPMENT_SERVICE_URL = "http://localhost:8083/api/v1/ship-ready-invoice-items";
     private static final String PROCESSED_TOPIC = "order-processed";
@@ -101,8 +102,10 @@ public class OrderProcessingService {
             // entity.
             // We'll use a Map to avoid strong coupling for now.
             @SuppressWarnings("unchecked")
-            java.util.Map<String, Object> response = restTemplate.getForObject(PAYMENT_SERVICE_URL + orderId,
-                    java.util.Map.class);
+            Map<String, Object> response = restTemplate.getForObject(
+                    PAYMENT_SERVICE_URL,
+                    Map.class,
+                    orderId);
             if (response != null && response.get("paymentStatus") != null) {
                 return (String) response.get("paymentStatus");
             }
@@ -116,14 +119,13 @@ public class OrderProcessingService {
     private List<InvoiceItemDTO> checkInventory(String orderId) {
         log.info("OrderProcessingService::checkInventory START with orderId: {}", orderId);
         try {
-            Long parsedOrderId = Long.parseLong(orderId);
             ResponseEntity<List<InvoiceItemDTO>> response = restTemplate.exchange(
                     INVENTORY_SERVICE_URL,
                     HttpMethod.GET,
                     null,
                     new ParameterizedTypeReference<List<InvoiceItemDTO>>() {
                     },
-                    parsedOrderId);
+                    orderId);
             List<InvoiceItemDTO> items = response.getBody();
             log.info("OrderProcessingService::checkInventory END");
             return items;
