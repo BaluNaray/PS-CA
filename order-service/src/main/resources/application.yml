@@ -48,3 +48,11 @@ app:
     payment: 2000
     inventory: 2000
     shipment: 2000
+
+services:
+  payment:
+    url: http://localhost:8081/payments/{orderId}/status
+  inventory:
+    url: http://localhost:8082/api/v1/orders/{orderId}/invoice-items
+  shipment:
+    url: http://localhost:8083/api/v1/ship-ready-invoice-items

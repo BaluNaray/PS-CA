@@ -30,10 +30,65 @@ services:
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     ports:
-      - 8080:8080
+      - 8090:8080 # Changed to 8090 to avoid conflict with order-service
     depends_on:
       - kafka
     environment:
       DYNAMIC_CONFIG_ENABLED: 'true'
       KAFKA_CLUSTERS_0_NAME: local
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+
+  zipkin:
+    image: openzipkin/zipkin
+    container_name: zipkin
+    ports:
+      - "9411:9411"
+
+  order-service:
+    build: .
+    container_name: order-service
+    ports:
+      - "8080:8080"
+    environment:
+      - SERVER_PORT=8080
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - MANAGEMENT_ZIPKIN_TRACING_ENDPOINT=http://zipkin:9411/api/v2/spans
+      - SERVICES_PAYMENT_URL=http://payment-status-service:8080/payments/{orderId}/status
+      - SERVICES_INVENTORY_URL=http://inventory-service:8080/api/v1/orders/{orderId}/invoice-items
+      - SERVICES_SHIPMENT_URL=http://shipment-service:8080/api/v1/ship-ready-invoice-items
+    depends_on:
+      - kafka
+      - zipkin
+
+  inventory-service:
+    build: ../inventory-service
+    container_name: inventory-service
+    ports:
+      - "8082:8080"
+    environment:
+      - SERVER_PORT=8080
+      - MANAGEMENT_ZIPKIN_TRACING_ENDPOINT=http://zipkin:9411/api/v2/spans
+    depends_on:
+      - zipkin
+
+  payment-status-service:
+    build: ../payment-status-service
+    container_name: payment-status-service
+    ports:
+      - "8081:8080"
+    environment:
+      - SERVER_PORT=8080
+      - MANAGEMENT_ZIPKIN_TRACING_ENDPOINT=http://zipkin:9411/api/v2/spans
+    depends_on:
+      - zipkin
+
+  shipment-service:
+    build: ../shipment-service
+    container_name: shipment-service
+    ports:
+      - "8083:8080"
+    environment:
+      - SERVER_PORT=8080
+      - MANAGEMENT_ZIPKIN_TRACING_ENDPOINT=http://zipkin:9411/api/v2/spans
+    depends_on:
+      - zipkin

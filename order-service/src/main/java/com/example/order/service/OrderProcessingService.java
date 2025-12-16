@@ -26,9 +26,14 @@ public class OrderProcessingService {
     private final RestTemplate restTemplate;
     private final KafkaTemplate<String, ProcessedOrderEvent> kafkaTemplate;
 
-    private static final String PAYMENT_SERVICE_URL = "http://localhost:8081/payments/{orderId}/status";
-    private static final String INVENTORY_SERVICE_URL = "http://localhost:8082/api/v1/orders/{orderId}/invoice-items";
-    private static final String SHIPMENT_SERVICE_URL = "http://localhost:8083/api/v1/ship-ready-invoice-items";
+    @org.springframework.beans.factory.annotation.Value("${services.payment.url}")
+    private String paymentServiceUrl;
+
+    @org.springframework.beans.factory.annotation.Value("${services.inventory.url}")
+    private String inventoryServiceUrl;
+
+    @org.springframework.beans.factory.annotation.Value("${services.shipment.url}")
+    private String shipmentServiceUrl;
     private static final String PROCESSED_TOPIC = "order-processed";
 
     public void processEvent(OrderEvent event) {
@@ -103,9 +108,8 @@ public class OrderProcessingService {
             // We'll use a Map to avoid strong coupling for now.
             @SuppressWarnings("unchecked")
             Map<String, Object> response = restTemplate.getForObject(
-                    PAYMENT_SERVICE_URL,
-                    Map.class,
-                    orderId);
+                    paymentServiceUrl.replace("{orderId}", orderId),
+                    Map.class);
             if (response != null && response.get("paymentStatus") != null) {
                 return (String) response.get("paymentStatus");
             }
@@ -120,7 +124,7 @@ public class OrderProcessingService {
         log.info("OrderProcessingService::checkInventory START with orderId: {}", orderId);
         try {
             ResponseEntity<List<InvoiceItemDTO>> response = restTemplate.exchange(
-                    INVENTORY_SERVICE_URL,
+                    inventoryServiceUrl.replace("{orderId}", orderId),
                     HttpMethod.GET,
                     null,
                     new ParameterizedTypeReference<List<InvoiceItemDTO>>() {
@@ -161,7 +165,7 @@ public class OrderProcessingService {
                 // itemLocationId).
                 // So we can pass the body directly.
 
-                restTemplate.postForEntity(SHIPMENT_SERVICE_URL, item, Object.class);
+                restTemplate.postForEntity(shipmentServiceUrl, item, Object.class);
             }
             log.info("OrderProcessingService::createShipment END");
             return true;
