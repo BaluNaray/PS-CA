@@ -18,8 +18,8 @@ public class OrderApplication {
     @Bean
     public RestTemplate restTemplate(RestTemplateBuilder builder) {
         return builder
-                .setConnectTimeout(Duration.ofMillis(20000))
-                .setReadTimeout(Duration.ofMillis(20000))
+                .setConnectTimeout(Duration.ofMillis(2000))
+                .setReadTimeout(Duration.ofMillis(2000))
                 .build();
     }
 }
