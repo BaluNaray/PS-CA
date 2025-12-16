@@ -1,0 +1,6 @@
+com\example\shipment\ShipmentApplication.class
+com\example\shipment\controller\ShipmentController.class
+com\example\shipment\service\ShipmentService.class
+com\example\shipment\exception\GlobalExceptionHandler.class
+com\example\shipment\entity\ShipReadyInvoiceItem.class
+com\example\shipment\repository\ShipmentRepository.class

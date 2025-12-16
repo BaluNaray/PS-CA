@@ -1,0 +1,6 @@
+com\example\inventory\entity\ShipReadyInvoiceItem.class
+com\example\inventory\repository\ShipReadyInvoiceItemRepository.class
+com\example\inventory\service\InventoryService.class
+com\example\inventory\InventoryApplication.class
+com\example\inventory\controller\InventoryController.class
+com\example\inventory\exception\GlobalExceptionHandler.class
