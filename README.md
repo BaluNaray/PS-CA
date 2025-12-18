@@ -1,4 +1,6 @@
-ehttps://mermaid.live/edit   
+Project Summary : The listener guarantees durability via DB persistence before acknowledgment, while the orchestrator handles business coordination and emits a consolidated result event.
+
+https://mermaid.live/edit   
 To understand the Project please go to the above url or any mermaid viewer and paste the code below. Shall add the image to the this folder too. File Name: Screenshot 2025-12-17 042909.png
 
 flowchart LR
