@@ -28,16 +28,20 @@ spring:
       enable-auto-commit: false # Manual Ack
     listener:
       ack-mode: MANUAL_IMMEDIATE
+      observation-enabled: true
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       properties:
         spring.json.type.mapping: event:com.example.order.dto.OrderEvent,result:com.example.order.dto.ProcessedOrderEvent
+      observation-enabled: true
 
 management:
   tracing:
     sampling:
       probability: 1.0
+    propagation:
+      type: b3
   zipkin:
     tracing:
       endpoint: http://localhost:9411/api/v2/spans
